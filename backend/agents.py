@@ -20,7 +20,7 @@ DEFAULT_AGENTS: List[AgentCharacter] = [
     AgentCharacter(
         id="technical",
         name="Technical Reviewer",
-        model="anthropic/claude-sonnet-4.5",
+        model="google/gemini-2.0-flash-exp:free",  # Free model for testing
         role="technical",
         description="Skeptical technical expert who evaluates feasibility and implementation quality",
         perspective="Engineering and technical implementation",
@@ -67,7 +67,7 @@ Provide:
     AgentCharacter(
         id="ecosystem",
         name="Ecosystem Strategist",
-        model="openai/gpt-4o",
+        model="google/gemma-3-27b-it:free",  # Free model for testing
         role="ecosystem",
         description="Strategic thinker focused on ecosystem fit and program alignment",
         perspective="Strategic ecosystem development",
@@ -121,7 +121,7 @@ Provide:
     AgentCharacter(
         id="budget",
         name="Budget Analyst",
-        model="google/gemini-2.0-flash",
+        model="meta-llama/llama-3.1-405b-instruct:free",  # Free model for testing
         role="budget",
         description="Financial analyst who evaluates budget reasonableness and resource allocation",
         perspective="Financial and resource efficiency",
@@ -176,7 +176,7 @@ Provide:
     AgentCharacter(
         id="impact",
         name="Impact Assessor",
-        model="x-ai/grok-3-mini-beta",
+        model="moonshotai/kimi-k2:free",  # Free model for testing
         role="impact",
         description="Outcome-focused evaluator who assesses potential lasting value and reach",
         perspective="Impact and outcomes",

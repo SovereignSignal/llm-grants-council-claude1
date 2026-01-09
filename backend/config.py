@@ -59,10 +59,10 @@ MIN_OBSERVATION_EVIDENCE = int(os.getenv("MIN_OBSERVATION_EVIDENCE", "5"))
 
 # Server settings
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
-API_PORT = int(os.getenv("API_PORT", "8001"))
+API_PORT = int(os.getenv("API_PORT", "8002"))
 
 # CORS origins
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5174,http://localhost:3000").split(",")
 
 # ============================================================================
 # Legacy Configuration (for backwards compatibility)
