@@ -1,166 +1,324 @@
-# CLAUDE.md - Technical Notes for LLM Council
+# CLAUDE.md - Technical Notes for Agentic Grants Council
 
-This file contains technical details, architectural decisions, and important implementation notes for future development sessions.
+This file contains technical details, architectural decisions, and important implementation notes for the Agentic Grants Council system.
 
 ## Project Overview
 
-LLM Council is a 3-stage deliberation system where multiple LLMs collaboratively answer user questions. The key innovation is anonymized peer review in Stage 2, preventing models from playing favorites.
+The Agentic Grants Council is a 4-stage AI-powered grant application evaluation system. Four specialized AI agents evaluate applications from different perspectives, deliberate with each other, and vote on decisions. The system learns from outcomes over time.
+
+### Key Features
+- **4 Specialized Agents**: Technical, Ecosystem, Budget, and Impact reviewers
+- **Persistent Agent Identities**: Agents accumulate observations and learn patterns
+- **Team Matching**: Automatic identification of returning applicants
+- **Deliberation**: Agents see each other's evaluations and can revise positions
+- **Auto-execution**: High-confidence unanimous decisions can execute automatically
+- **Learning Loops**: Feedback from overrides and outcomes improves agents
 
 ## Architecture
 
 ### Backend Structure (`backend/`)
 
-**`config.py`**
-- Contains `COUNCIL_MODELS` (list of OpenRouter model identifiers)
-- Contains `CHAIRMAN_MODEL` (model that synthesizes final answer)
-- Uses environment variable `OPENROUTER_API_KEY` from `.env`
-- Backend runs on **port 8001** (NOT 8000 - user had another app on 8000)
+```
+backend/
+├── __init__.py
+├── config.py          # Configuration and thresholds
+├── openrouter.py      # OpenRouter API client
+├── models.py          # Pydantic data models
+├── agents.py          # Agent definitions and prompt building
+├── parser.py          # Application parsing with LLM
+├── storage.py         # Storage abstraction (JSON files)
+├── grants_council.py  # 4-stage orchestration
+├── learning.py        # Learning loops and observation management
+├── council.py         # Legacy 3-stage council (backwards compat)
+└── main.py            # FastAPI application
+```
 
-**`openrouter.py`**
-- `query_model()`: Single async model query
-- `query_models_parallel()`: Parallel queries using `asyncio.gather()`
-- Returns dict with 'content' and optional 'reasoning_details'
-- Graceful degradation: returns None on failure, continues with successful responses
+### Core Modules
 
-**`council.py`** - The Core Logic
-- `stage1_collect_responses()`: Parallel queries to all council models
-- `stage2_collect_rankings()`:
-  - Anonymizes responses as "Response A, B, C, etc."
-  - Creates `label_to_model` mapping for de-anonymization
-  - Prompts models to evaluate and rank (with strict format requirements)
-  - Returns tuple: (rankings_list, label_to_model_dict)
-  - Each ranking includes both raw text and `parsed_ranking` list
-- `stage3_synthesize_final()`: Chairman synthesizes from all responses + rankings
-- `parse_ranking_from_text()`: Extracts "FINAL RANKING:" section, handles both numbered lists and plain format
-- `calculate_aggregate_rankings()`: Computes average rank position across all peer evaluations
+**`models.py`** - Pydantic Models
+- `Application`: Grant application with raw and parsed content
+- `ParsedApplication`: Structured application data
+- `TeamProfile`: Team history and reputation
+- `TeamMatch`: Team matching result
+- `AgentCharacter`: Agent definition with prompts
+- `AgentObservation`: Learned patterns
+- `AgentEvaluation`: Agent's evaluation of application
+- `Deliberation`: Deliberation rounds
+- `CouncilDecision`: Final decision with votes
+- `GrantOutcome`: Post-funding outcome
+- `LearningEvent`: Events that trigger learning
 
-**`storage.py`**
-- JSON-based conversation storage in `data/conversations/`
-- Each conversation: `{id, created_at, messages[]}`
-- Assistant messages contain: `{role, stage1, stage2, stage3}`
-- Note: metadata (label_to_model, aggregate_rankings) is NOT persisted to storage, only returned via API
+**`agents.py`** - Agent System
+- 4 default agents: Technical, Ecosystem, Budget, Impact
+- Each has character prompt, evaluation instructions, model assignment
+- `build_evaluation_prompt()`: Assembles full context for evaluation
+- `build_deliberation_prompt()`: Prompt for seeing others' evaluations
+- Response parsing: Extracts structured data from LLM responses
 
-**`main.py`**
-- FastAPI app with CORS enabled for localhost:5173 and localhost:3000
-- POST `/api/conversations/{id}/message` returns metadata in addition to stages
-- Metadata includes: label_to_model mapping and aggregate_rankings
+**`parser.py`** - Application Parsing
+- `parse_application()`: LLM-powered parsing of freeform text
+- Extracts: team, budget, milestones, timeline, etc.
+- `validate_parsed_application()`: Checks completeness
 
-### Frontend Structure (`frontend/src/`)
+**`grants_council.py`** - Main Orchestration
+- `stage1_parse_and_contextualize()`: Parse + team matching
+- `stage2_evaluate()`: Parallel agent evaluations
+- `stage3_deliberate()`: Agents review each other's work
+- `stage4_vote_and_decide()`: Aggregate votes and route
 
-**`App.jsx`**
-- Main orchestration: manages conversations list and current conversation
-- Handles message sending and metadata storage
-- Important: metadata is stored in the UI state for display but not persisted to backend JSON
+**`storage.py`** - Data Persistence
+- JSON file storage for development
+- Async functions for all operations
+- Team matching with wallet, name, and member overlap
+- Placeholder for vector similarity search
 
-**`components/ChatInterface.jsx`**
-- Multiline textarea (3 rows, resizable)
-- Enter to send, Shift+Enter for new line
-- User messages wrapped in markdown-content class for padding
+**`learning.py`** - Learning System
+- Process override events (human disagreed with council)
+- Process outcome events (grant succeeded/failed)
+- Generate observations from reflections
+- Observation consolidation and promotion
 
-**`components/Stage1.jsx`**
-- Tab view of individual model responses
-- ReactMarkdown rendering with markdown-content wrapper
+### The 4-Stage Flow
 
-**`components/Stage2.jsx`**
-- **Critical Feature**: Tab view showing RAW evaluation text from each model
-- De-anonymization happens CLIENT-SIDE for display (models receive anonymous labels)
-- Shows "Extracted Ranking" below each evaluation so users can validate parsing
-- Aggregate rankings shown with average position and vote count
-- Explanatory text clarifies that boldface model names are for readability only
+```
+1. PARSE & CONTEXTUALIZE
+   └─> Parse application → Match team → Gather context
 
-**`components/Stage3.jsx`**
-- Final synthesized answer from chairman
-- Green-tinted background (#f0fff0) to highlight conclusion
+2. EVALUATE (parallel)
+   └─> Each agent evaluates independently
+   └─> Considers: observations, team history, similar applications
 
-**Styling (`*.css`)**
-- Light mode theme (not dark mode)
-- Primary color: #4a90e2 (blue)
-- Global markdown styling in `index.css` with `.markdown-content` class
-- 12px padding on all markdown content to prevent cluttered appearance
+3. DELIBERATE
+   └─> Agents see anonymized peer evaluations
+   └─> Can revise positions with rationale
+
+4. VOTE & DECIDE
+   └─> Aggregate votes
+   └─> Calculate consensus
+   └─> Route: auto-execute or human review
+```
+
+### Agent Roles
+
+| Agent | Role | Focus |
+|-------|------|-------|
+| Technical | Skeptical engineer | Feasibility, team capability, timeline realism |
+| Ecosystem | Strategist | Program fit, ecosystem gaps, duplication |
+| Budget | Analyst | Amount reasonableness, structure, value |
+| Impact | Assessor | Reach, lasting value, counterfactual |
+
+### Decision Routing
+
+```python
+# Auto-approve conditions:
+- Unanimous approval votes
+- Consensus strength >= 85%
+- Amount < $50,000
+
+# Auto-reject conditions:
+- Unanimous rejection votes
+- Consensus strength >= 85%
+- Amount < $50,000
+
+# Human review:
+- Split decisions
+- Large amounts (>= $50,000)
+- Low confidence
+```
+
+## API Endpoints
+
+### Application Endpoints
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/applications` | List applications |
+| POST | `/api/applications` | Submit new application |
+| POST | `/api/applications/stream` | Submit with SSE streaming |
+| GET | `/api/applications/{id}` | Get full evaluation |
+| POST | `/api/applications/{id}/decision` | Record human decision |
+| POST | `/api/applications/{id}/outcome` | Record grant outcome |
+
+### Team Endpoints
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/teams` | List team profiles |
+| GET | `/api/teams/{id}` | Get team details |
+
+### Observation Endpoints
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/observations` | List observations |
+| POST | `/api/observations/{id}/approve` | Approve draft observation |
+| DELETE | `/api/observations/{id}` | Deprecate observation |
+
+### Info Endpoints
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/` | Health check |
+| GET | `/api/agents` | List council agents |
+
+### Legacy Endpoints (backwards compatibility)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/conversations` | List conversations |
+| POST | `/api/conversations` | Create conversation |
+| POST | `/api/conversations/{id}/message` | Send message |
+| POST | `/api/conversations/{id}/message/stream` | Streaming message |
+
+## Configuration
+
+Key environment variables:
+```bash
+# Required
+OPENROUTER_API_KEY=your_key_here
+
+# Optional with defaults
+DATA_DIR=data
+AUTO_APPROVE_THRESHOLD=0.85
+AUTO_REJECT_THRESHOLD=0.85
+HUMAN_REVIEW_BUDGET_THRESHOLD=50000
+DELIBERATION_ROUNDS=1
+MIN_OBSERVATION_EVIDENCE=5
+API_HOST=0.0.0.0
+API_PORT=8001
+CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+```
+
+## Data Storage
+
+### Directory Structure
+```
+data/
+├── applications/      # Application records
+├── teams/            # Team profiles
+├── evaluations/      # Agent evaluations
+├── deliberations/    # Deliberation records
+├── decisions/        # Council decisions
+├── observations/     # Learned patterns
+├── outcomes/         # Grant outcomes
+├── learning_events/  # Events for learning
+└── conversations/    # Legacy conversation storage
+```
+
+### Observation Lifecycle
+1. **Draft**: Generated from learning events
+2. **Reviewed**: Has minimum evidence count
+3. **Active**: Human-approved, used in evaluations
+4. **Deprecated**: No longer used
+
+## Learning System
+
+### Override Learning
+When a human overrides a council decision:
+1. Each agent reflects on what they missed
+2. Reflection may generate pattern observation
+3. Observations start as drafts
+4. Human reviews and approves useful patterns
+
+### Outcome Learning
+When a grant outcome is recorded:
+1. Each agent reflects on prediction accuracy
+2. Did concerns materialize? Did strengths hold?
+3. Generates observations about prediction patterns
+
+### Observation Evidence
+- Observations accumulate evidence from applications
+- Confidence increases with validation ratio
+- Observations with enough evidence get promoted
 
 ## Key Design Decisions
 
-### Stage 2 Prompt Format
-The Stage 2 prompt is very specific to ensure parseable output:
+### Agent Anonymization in Deliberation
+- Agents see other evaluations without agent IDs
+- Prevents favoritism or dismissiveness based on source
+- Focuses deliberation on the arguments themselves
+
+### Observation Gating
+- All observations start as drafts
+- Minimum evidence threshold before promotion
+- Human approval required for activation
+- Prevents bad patterns from propagating
+
+### Team Matching Strategy
+1. Exact wallet match (definitive)
+2. Fuzzy name match (high confidence)
+3. Member overlap (medium confidence)
+4. Ambiguous matches require confirmation
+
+### Graceful Degradation
+- If one agent fails, continue with others
+- If parsing fails, evaluation can't proceed
+- Errors logged but don't crash the system
+
+## Running the System
+
+```bash
+# Start backend
+uv run python -m backend.main
+
+# Or use the startup script
+./start.sh
 ```
-1. Evaluate each response individually first
-2. Provide "FINAL RANKING:" header
-3. Numbered list format: "1. Response C", "2. Response A", etc.
-4. No additional text after ranking section
-```
-
-This strict format allows reliable parsing while still getting thoughtful evaluations.
-
-### De-anonymization Strategy
-- Models receive: "Response A", "Response B", etc.
-- Backend creates mapping: `{"Response A": "openai/gpt-5.1", ...}`
-- Frontend displays model names in **bold** for readability
-- Users see explanation that original evaluation used anonymous labels
-- This prevents bias while maintaining transparency
-
-### Error Handling Philosophy
-- Continue with successful responses if some models fail (graceful degradation)
-- Never fail the entire request due to single model failure
-- Log errors but don't expose to user unless all models fail
-
-### UI/UX Transparency
-- All raw outputs are inspectable via tabs
-- Parsed rankings shown below raw text for validation
-- Users can verify system's interpretation of model outputs
-- This builds trust and allows debugging of edge cases
 
 ## Important Implementation Details
 
 ### Relative Imports
-All backend modules use relative imports (e.g., `from .config import ...`) not absolute imports. This is critical for Python's module system to work correctly when running as `python -m backend.main`.
+All backend modules use relative imports (e.g., `from .config import ...`). Run as `python -m backend.main` from project root.
 
 ### Port Configuration
-- Backend: 8001 (changed from 8000 to avoid conflict)
+- Backend: 8001
 - Frontend: 5173 (Vite default)
-- Update both `backend/main.py` and `frontend/src/api.js` if changing
 
-### Markdown Rendering
-All ReactMarkdown components must be wrapped in `<div className="markdown-content">` for proper spacing. This class is defined globally in `index.css`.
+## Future Enhancements
 
-### Model Configuration
-Models are hardcoded in `backend/config.py`. Chairman can be same or different from council members. The current default is Gemini as chairman per user preference.
+### Phase 1 (Current)
+- [x] 4-stage council flow
+- [x] Agent definitions with character prompts
+- [x] JSON storage
+- [x] Learning event generation
 
-## Common Gotchas
+### Phase 2 (Planned)
+- [ ] PostgreSQL integration
+- [ ] Vector database for similarity search
+- [ ] Discord integration
+- [ ] Updated frontend for grants
 
-1. **Module Import Errors**: Always run backend as `python -m backend.main` from project root, not from backend directory
-2. **CORS Issues**: Frontend must match allowed origins in `main.py` CORS middleware
-3. **Ranking Parse Failures**: If models don't follow format, fallback regex extracts any "Response X" patterns in order
-4. **Missing Metadata**: Metadata is ephemeral (not persisted), only available in API responses
+### Phase 3 (Future)
+- [ ] Batch learning analysis
+- [ ] Cross-program learning
+- [ ] Agent performance analytics
+- [ ] Bootstrap from historical data (Crypto Grant Wire)
 
-## Future Enhancement Ideas
+## Testing
 
-- Configurable council/chairman via UI instead of config file
-- Streaming responses instead of batch loading
-- Export conversations to markdown/PDF
-- Model performance analytics over time
-- Custom ranking criteria (not just accuracy/insight)
-- Support for reasoning models (o1, etc.) with special handling
+```bash
+# Run tests
+uv run pytest
 
-## Testing Notes
-
-Use `test_openrouter.py` to verify API connectivity and test different model identifiers before adding to council. The script tests both streaming and non-streaming modes.
-
-## Data Flow Summary
-
-```
-User Query
-    ↓
-Stage 1: Parallel queries → [individual responses]
-    ↓
-Stage 2: Anonymize → Parallel ranking queries → [evaluations + parsed rankings]
-    ↓
-Aggregate Rankings Calculation → [sorted by avg position]
-    ↓
-Stage 3: Chairman synthesis with full context
-    ↓
-Return: {stage1, stage2, stage3, metadata}
-    ↓
-Frontend: Display with tabs + validation UI
+# Test with a sample application
+curl -X POST http://localhost:8001/api/applications \
+  -H "Content-Type: application/json" \
+  -d '{"content": "Project: My Grant\nTeam: My Team\nAmount: $10,000\n..."}'
 ```
 
-The entire flow is async/parallel where possible to minimize latency.
+## Module Dependencies
+
+```
+config.py ──────────────────────────────────────────────┐
+    ↓                                                   │
+openrouter.py ──────────────────────────────────────────┤
+    ↓                                                   │
+models.py ──────────────────────────────────────────────┤
+    ↓                                                   │
+agents.py (uses models, openrouter) ────────────────────┤
+    ↓                                                   │
+parser.py (uses models, openrouter) ────────────────────┤
+    ↓                                                   │
+storage.py (uses models, config) ───────────────────────┤
+    ↓                                                   │
+grants_council.py (uses all above) ─────────────────────┤
+    ↓                                                   │
+learning.py (uses models, storage, openrouter) ─────────┤
+    ↓                                                   │
+main.py (uses all above) ───────────────────────────────┘
+```
