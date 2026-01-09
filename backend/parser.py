@@ -11,6 +11,7 @@ from .models import (
     Milestone,
 )
 from .openrouter import query_model
+from .config import PARSING_MODEL
 
 
 PARSING_PROMPT = """You are a grant application parser. Your task is to extract structured information from a grant application.
@@ -88,7 +89,7 @@ async def parse_application(raw_content: str) -> Optional[ParsedApplication]:
     prompt = PARSING_PROMPT.format(application_content=raw_content)
 
     response = await query_model(
-        model="google/gemini-2.0-flash",  # Fast model for parsing
+        model=PARSING_MODEL,
         messages=[{"role": "user", "content": prompt}],
         timeout=60.0
     )
@@ -127,12 +128,15 @@ async def parse_application(raw_content: str) -> Optional[ParsedApplication]:
         team_members = []
         for member_data in data.get('team_members', []):
             if member_data and isinstance(member_data, dict):
+                # Filter out None values from social_links
+                raw_social = member_data.get('social_links', {}) or {}
+                social_links = {k: v for k, v in raw_social.items() if v is not None}
                 team_members.append(TeamMember(
                     name=member_data.get('name', 'Unknown'),
                     role=member_data.get('role'),
-                    wallet_addresses=member_data.get('wallet_addresses', []),
-                    aliases=member_data.get('aliases', []),
-                    social_links=member_data.get('social_links', {}),
+                    wallet_addresses=member_data.get('wallet_addresses', []) or [],
+                    aliases=member_data.get('aliases', []) or [],
+                    social_links=social_links,
                 ))
 
         budget_items = []
@@ -173,12 +177,14 @@ async def parse_application(raw_content: str) -> Optional[ParsedApplication]:
             ecosystem_benefit=data.get('ecosystem_benefit'),
             github_url=data.get('github_url'),
             website_url=data.get('website_url'),
-            social_links=data.get('social_links', {}),
+            social_links={k: v for k, v in (data.get('social_links', {}) or {}).items() if v is not None},
             additional_info=data.get('additional_info'),
         )
 
     except Exception as e:
+        import traceback
         print(f"Error converting parsed data to model: {e}")
+        traceback.print_exc()
         return None
 
 
@@ -249,7 +255,7 @@ Respond with JSON:
 Only include information that is explicitly stated. Use empty arrays if not found."""
 
     response = await query_model(
-        model="google/gemini-2.0-flash",
+        model=PARSING_MODEL,
         messages=[{"role": "user", "content": prompt}],
         timeout=30.0
     )

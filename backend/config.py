@@ -27,10 +27,10 @@ AGENT_MODELS = {
 }
 
 # Model for parsing applications
-PARSING_MODEL = "google/gemini-2.0-flash"
+PARSING_MODEL = "openai/gpt-4o-mini"
 
 # Model for generating titles/summaries
-UTILITY_MODEL = "google/gemini-2.0-flash"
+UTILITY_MODEL = "openai/gpt-4o-mini"
 
 # ============================================================================
 # Council Decision Thresholds

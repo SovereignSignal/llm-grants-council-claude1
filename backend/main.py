@@ -31,6 +31,7 @@ from .council import (
     stage2_collect_rankings,
     stage3_synthesize_final,
     calculate_aggregate_rankings,
+    augment_query_with_urls,
 )
 
 app = FastAPI(
@@ -128,8 +129,11 @@ async def submit_application(request: SubmitApplicationRequest):
     The application will be parsed, evaluated by all agents,
     deliberated, and a decision will be made.
     """
+    # Fetch content from any URLs in the request
+    content = await augment_query_with_urls(request.content)
+
     result = await run_grants_council(
-        raw_content=request.content,
+        raw_content=content,
         source=request.source,
         source_id=request.source_id,
     )
@@ -144,9 +148,12 @@ async def submit_application_stream(request: SubmitApplicationRequest):
 
     Returns Server-Sent Events as each stage completes.
     """
+    # Fetch content from any URLs in the request
+    content = await augment_query_with_urls(request.content)
+
     async def event_generator():
         async for event in run_grants_council_streaming(
-            raw_content=request.content,
+            raw_content=content,
             source=request.source,
             source_id=request.source_id,
         ):
