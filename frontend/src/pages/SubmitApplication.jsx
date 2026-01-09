@@ -12,11 +12,13 @@ export default function SubmitApplication() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState([]);
   const [error, setError] = useState(null);
+  const [applicationId, setApplicationId] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setProgress([]);
+    setApplicationId(null);
     setIsSubmitting(true);
 
     let content = '';
@@ -34,14 +36,26 @@ export default function SubmitApplication() {
       return;
     }
 
+    let capturedAppId = null;
+
     try {
       await api.submitApplicationStream(content, 'web', null, (eventType, event) => {
         setProgress(prev => [...prev, { type: eventType, ...event }]);
 
-        if (eventType === 'complete' && event.application_id) {
-          setTimeout(() => {
-            navigate(`/applications/${event.application_id}`);
-          }, 1000);
+        // Capture application_id from stage1_complete
+        if (eventType === 'stage1_complete' && event.data?.application_id) {
+          capturedAppId = event.data.application_id;
+          setApplicationId(capturedAppId);
+        }
+
+        // Redirect on complete
+        if (eventType === 'complete') {
+          const appId = capturedAppId || applicationId;
+          if (appId) {
+            setTimeout(() => {
+              navigate(`/applications/${appId}`);
+            }, 1500);
+          }
         }
 
         if (eventType === 'error') {
@@ -194,6 +208,16 @@ export default function SubmitApplication() {
                   </div>
                 ))}
               </div>
+              {applicationId && progress.some(p => p.type === 'complete') && (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => navigate(`/applications/${applicationId}`)}
+                  style={{ marginTop: '16px' }}
+                >
+                  View Evaluation Results
+                </button>
+              )}
             </div>
           )}
 

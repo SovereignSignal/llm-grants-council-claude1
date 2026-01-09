@@ -3,6 +3,7 @@
   flex-direction: column;
   min-height: 100vh;
   background: #f8f9fa;
+  overflow: visible;
 }
 
 .nav {
@@ -68,4 +69,6 @@
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
+  overflow: visible;
+  padding-bottom: 60px;
 }

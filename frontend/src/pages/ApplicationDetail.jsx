@@ -103,7 +103,13 @@ export default function ApplicationDetail() {
   if (error) return <div className="error">Error: {error}</div>;
   if (!application) return <div className="error">Application not found</div>;
 
-  const { parsed, evaluations, decision, deliberation } = application;
+  // API returns { application: {...}, evaluations: [...], decision: {...}, ... }
+  const appData = application.application || application;
+  const parsed = appData.parsed;
+  const evaluations = application.evaluations || [];
+  const decision = application.decision;
+  const deliberation = application.deliberation;
+  const createdAt = appData.created_at;
 
   return (
     <div className="application-detail">
@@ -115,7 +121,7 @@ export default function ApplicationDetail() {
           <div className="app-meta">
             <span>Team: {parsed?.team_name || 'Unknown'}</span>
             <span>Amount: {parsed?.requested_amount ? `$${parsed.requested_amount.toLocaleString()}` : 'N/A'}</span>
-            <span>Submitted: {new Date(application.created_at).toLocaleDateString()}</span>
+            <span>Submitted: {createdAt ? new Date(createdAt).toLocaleDateString() : 'N/A'}</span>
           </div>
         </div>
 
