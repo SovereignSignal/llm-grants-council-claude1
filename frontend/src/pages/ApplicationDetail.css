@@ -1,0 +1,387 @@
+.application-detail {
+  max-width: 1000px;
+}
+
+.back-link {
+  display: inline-block;
+  color: #6366f1;
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.app-title-section h1 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  color: #1a1a1a;
+}
+
+.app-meta {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.decision-badge {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.decision-badge.approve {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.decision-badge.reject {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.decision-badge .consensus {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  margin-top: 4px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tabs button {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.15s ease;
+}
+
+.tabs button:hover {
+  color: #333;
+}
+
+.tabs button.active {
+  color: #6366f1;
+  border-bottom-color: #6366f1;
+}
+
+.tab-content {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  padding: 24px;
+}
+
+.agent-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.agent-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.agent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.agent-header:hover {
+  background: #f8f9fa;
+}
+
+.agent-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.agent-name {
+  font-weight: 600;
+  text-transform: capitalize;
+  color: #1a1a1a;
+}
+
+.agent-recommendation {
+  font-size: 13px;
+  color: #666;
+  text-transform: capitalize;
+}
+
+.agent-score {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.agent-details {
+  padding: 0 16px 16px;
+  border-top: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.detail-section {
+  margin-top: 16px;
+}
+
+.detail-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.detail-section p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.detail-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.detail-section li {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.deliberation-note {
+  background: #fef3c7;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.deliberation-section {
+  margin-top: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.deliberation-section h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.parsed-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.parsed-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #1a1a1a;
+}
+
+.parsed-section p {
+  margin: 0;
+  line-height: 1.6;
+  color: #333;
+}
+
+.parsed-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.budget-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.budget-table th,
+.budget-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.budget-table th {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  background: #f8f9fa;
+}
+
+.milestones {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.milestone {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.milestone-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.milestone-num {
+  background: #6366f1;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.milestone-title {
+  font-weight: 500;
+  flex: 1;
+}
+
+.milestone-timeline {
+  font-size: 13px;
+  color: #666;
+}
+
+.milestone ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.decision-details {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.decision-summary h3 {
+  margin: 0 0 12px 0;
+}
+
+.decision-result {
+  font-size: 24px;
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-bottom: 8px;
+}
+
+.votes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.vote-card {
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.vote-card.approve, .vote-card.strong_approve, .vote-card.lean_approve {
+  background: #f0fdf4;
+}
+
+.vote-card.reject, .vote-card.strong_reject, .vote-card.lean_reject {
+  background: #fef2f2;
+}
+
+.vote-agent {
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-bottom: 4px;
+}
+
+.vote-rec {
+  font-size: 14px;
+  text-transform: capitalize;
+  color: #666;
+}
+
+.vote-confidence {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.human-review {
+  max-width: 500px;
+}
+
+.human-review h3 {
+  margin: 0 0 8px 0;
+}
+
+.human-review textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  margin: 16px 0;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+.decision-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-success {
+  background: #16a34a;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #15803d;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+.no-data {
+  color: #666;
+  text-align: center;
+  padding: 40px;
+}

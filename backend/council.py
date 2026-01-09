@@ -1,8 +1,77 @@
 """3-stage LLM Council orchestration."""
 
+import re
+import httpx
 from typing import List, Dict, Any, Tuple
 from .openrouter import query_models_parallel, query_model
 from .config import COUNCIL_MODELS, CHAIRMAN_MODEL
+
+
+async def fetch_url_content(url: str, timeout: float = 30.0) -> str:
+    """
+    Fetch content from a URL and convert to readable text.
+
+    Args:
+        url: The URL to fetch
+        timeout: Request timeout in seconds
+
+    Returns:
+        The extracted text content or error message
+    """
+    try:
+        async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
+            response = await client.get(url, headers={
+                "User-Agent": "Mozilla/5.0 (compatible; GrantsCouncil/1.0)"
+            })
+            response.raise_for_status()
+            html = response.text
+
+            # Simple HTML to text conversion
+            # Remove script and style elements
+            html = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.DOTALL | re.IGNORECASE)
+            html = re.sub(r'<style[^>]*>.*?</style>', '', html, flags=re.DOTALL | re.IGNORECASE)
+            # Remove HTML tags
+            text = re.sub(r'<[^>]+>', ' ', html)
+            # Clean up whitespace
+            text = re.sub(r'\s+', ' ', text).strip()
+            # Decode HTML entities
+            import html as html_module
+            text = html_module.unescape(text)
+
+            # Truncate if too long (keep first ~8000 chars)
+            if len(text) > 8000:
+                text = text[:8000] + "\n\n[Content truncated...]"
+
+            return text
+    except Exception as e:
+        return f"[Error fetching URL: {e}]"
+
+
+async def augment_query_with_urls(user_query: str) -> str:
+    """
+    Detect URLs in user query, fetch their content, and augment the query.
+
+    Args:
+        user_query: The original user query
+
+    Returns:
+        Augmented query with URL content included
+    """
+    # Find all URLs in the query
+    url_pattern = r'https?://[^\s<>"{}|\\^`\[\]]+'
+    urls = re.findall(url_pattern, user_query)
+
+    if not urls:
+        return user_query
+
+    # Fetch content from each URL
+    augmented_parts = [user_query, "\n\n--- FETCHED URL CONTENT ---\n"]
+
+    for url in urls:
+        content = await fetch_url_content(url)
+        augmented_parts.append(f"\nContent from {url}:\n{content}\n")
+
+    return "\n".join(augmented_parts)
 
 
 async def stage1_collect_responses(user_query: str) -> List[Dict[str, Any]]:
@@ -15,7 +84,9 @@ async def stage1_collect_responses(user_query: str) -> List[Dict[str, Any]]:
     Returns:
         List of dicts with 'model' and 'response' keys
     """
-    messages = [{"role": "user", "content": user_query}]
+    # Augment query with URL content if URLs are present
+    augmented_query = await augment_query_with_urls(user_query)
+    messages = [{"role": "user", "content": augmented_query}]
 
     # Query all models in parallel
     responses = await query_models_parallel(COUNCIL_MODELS, messages)

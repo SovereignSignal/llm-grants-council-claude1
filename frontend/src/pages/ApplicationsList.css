@@ -1,0 +1,173 @@
+.applications-list {
+  max-width: 1200px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  margin: 0 0 4px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.subtitle {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background: #6366f1;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #5558e3;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.applications-table {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+.applications-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.applications-table th,
+.applications-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.applications-table th {
+  background: #f8f9fa;
+  font-weight: 500;
+  font-size: 13px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.applications-table tr:last-child td {
+  border-bottom: none;
+}
+
+.applications-table tr:hover td {
+  background: #f8f9fa;
+}
+
+.app-link {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.app-link:hover {
+  text-decoration: underline;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-neutral {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px 0;
+  color: #1a1a1a;
+}
+
+.empty-state p {
+  margin: 0 0 20px 0;
+  color: #666;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.error {
+  color: #dc2626;
+}

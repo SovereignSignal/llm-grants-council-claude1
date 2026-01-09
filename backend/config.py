@@ -77,4 +77,4 @@ COUNCIL_MODELS = [
 ]
 
 # Chairman model - synthesizes final response (legacy)
-CHAIRMAN_MODEL = "google/gemini-2.0-flash"
+CHAIRMAN_MODEL = "anthropic/claude-sonnet-4"
