@@ -3,7 +3,7 @@ name = "agentic-grants-council"
 version = "2.0.0"
 description = "AI-powered grant application evaluation system with persistent agent identities"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
@@ -33,6 +33,9 @@ dev = [
     "black>=24.0.0",
     "ruff>=0.3.0",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend"]
 
 [build-system]
 requires = ["hatchling"]
