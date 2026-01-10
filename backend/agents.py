@@ -10,6 +10,7 @@ from .models import (
     Recommendation,
     ConfidenceLevel,
 )
+from .config import AGENT_MODELS
 
 
 # ============================================================================
@@ -20,7 +21,7 @@ DEFAULT_AGENTS: List[AgentCharacter] = [
     AgentCharacter(
         id="technical",
         name="Technical Reviewer",
-        model="google/gemini-2.0-flash-exp:free",  # Free model for testing
+        model=AGENT_MODELS.get("technical", "openai/gpt-4o-mini"),
         role="technical",
         description="Skeptical technical expert who evaluates feasibility and implementation quality",
         perspective="Engineering and technical implementation",
@@ -67,7 +68,7 @@ Provide:
     AgentCharacter(
         id="ecosystem",
         name="Ecosystem Strategist",
-        model="google/gemma-3-27b-it:free",  # Free model for testing
+        model=AGENT_MODELS.get("ecosystem", "openai/gpt-4o-mini"),
         role="ecosystem",
         description="Strategic thinker focused on ecosystem fit and program alignment",
         perspective="Strategic ecosystem development",
@@ -121,7 +122,7 @@ Provide:
     AgentCharacter(
         id="budget",
         name="Budget Analyst",
-        model="meta-llama/llama-3.1-405b-instruct:free",  # Free model for testing
+        model=AGENT_MODELS.get("budget", "openai/gpt-4o-mini"),
         role="budget",
         description="Financial analyst who evaluates budget reasonableness and resource allocation",
         perspective="Financial and resource efficiency",
@@ -176,7 +177,7 @@ Provide:
     AgentCharacter(
         id="impact",
         name="Impact Assessor",
-        model="moonshotai/kimi-k2:free",  # Free model for testing
+        model=AGENT_MODELS.get("impact", "openai/gpt-4o-mini"),
         role="impact",
         description="Outcome-focused evaluator who assesses potential lasting value and reach",
         perspective="Impact and outcomes",

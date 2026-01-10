@@ -20,10 +20,10 @@ DATA_DIR = os.getenv("DATA_DIR", "data")
 
 # Default models for each agent role
 AGENT_MODELS = {
-    "technical": "anthropic/claude-sonnet-4.5",
+    "technical": "anthropic/claude-sonnet-4",
     "ecosystem": "openai/gpt-4o",
-    "budget": "google/gemini-2.0-flash",
-    "impact": "x-ai/grok-3-mini-beta",
+    "budget": "openai/gpt-4o-mini",
+    "impact": "openai/gpt-4o-mini",
 }
 
 # Model for parsing applications
